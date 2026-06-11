@@ -235,9 +235,12 @@ function setHTML(id, html) { document.getElementById(id).innerHTML = html; }
 function fmtDate(d) { return new Date(d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
 function fmtTime(d) { return new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
 function scoreStr(m) {
-  const s = m.score?.fullTime;
-  if (s?.home == null) return null;
-  return `${s.home} : ${s.away}`;
+  // Check fullTime first, then regularTime, then halftime as fallback
+  const s = m.score?.fullTime ?? m.score?.regularTime ?? m.score?.halfTime;
+  if (!s || (s.home === null && s.away === null)) return null;
+  const home = s.home ?? '?';
+  const away = s.away ?? '?';
+  return `${home} – ${away}`;
 }
 function statusLabel(m) {
   if (m.status==='IN_PLAY'||m.status==='PAUSED') return 'LIVE';
@@ -260,7 +263,7 @@ function matchCard(m) {
     </div>
     <div class="team-name left">${teamName(m.homeTeam)}</div>
     <div class="score-box">
-      ${sc ? `<div class="score">${sc}</div>` : `<div class="score no-score">vs</div>`}
+      ${sc ? `<div class="score" style="${isDone?'color:var(--gold)':isLive?'color:var(--live)':''}">${sc}</div>` : `<div class="score no-score">vs</div>`}
     </div>
     <div class="team-name">${teamName(m.awayTeam)}</div>
     <div class="match-venue">${m.venue||''}</div>
